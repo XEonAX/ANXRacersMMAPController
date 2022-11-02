@@ -149,9 +149,9 @@ namespace ANXRacersMMAPController
                     case "Rigidbody": item.PropValue = data.SpaceshipState.Rigidbody; break;
                     case "Input": item.PropValue = data.SpaceshipState.Input; break;
 
-                    case "RelPosition": item.PropValue = data.TrackState.RelPosition; break;
-                    case "CheckRotation": item.PropValue = data.TrackState.Rotation; break;
-                    case "CheckpointIndex": item.PropValue = data.TrackState.CheckpointIndex; break;
+                    case "RelPosition": item.PropValue = data.CheckpointStatus.RelPosition; break;
+                    case "CheckRotation": item.PropValue = data.CheckpointStatus.Rotation; break;
+                    case "CheckpointIndex": item.PropValue = data.CheckpointStatus.CheckpointIndex; break;
                     
 
 

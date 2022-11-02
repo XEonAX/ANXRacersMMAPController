@@ -27,14 +27,14 @@ namespace ANXRacersMMAPController
             Data.Sensors = new MMRayInfo[24 * 5];
             try
             {
-                memoryMappedFile = MemoryMappedFile.CreateOrOpen(MapName, 10000);
-                A0 = memoryMappedFile.CreateViewAccessor(0, 512, MemoryMappedFileAccess.ReadWrite);
+                memoryMappedFile = MemoryMappedFile.OpenExisting(MapName);
+                A0 = memoryMappedFile.CreateViewAccessor(0, 512, MemoryMappedFileAccess.ReadWrite);//Work with first 512 Bytes. We need to be able to write to control the game.
                 var mapNameBytes = new byte[100];
                 A0.ReadArray(0, mapNameBytes, 0, 100);
-                Debug.WriteLine("Connected to " + Encoding.UTF8.GetString(mapNameBytes));
-                A512 = memoryMappedFile.CreateViewAccessor(512, 9000, MemoryMappedFileAccess.Read);
+                Debug.WriteLine("Connected to " + Encoding.UTF8.GetString(mapNameBytes));//First 100 bytes should have the "ANXRacersGymInterface" string
+                A512 = memoryMappedFile.CreateViewAccessor(512, 9000, MemoryMappedFileAccess.Read);//Work with remaining bytes. Note we only want to read this.
                 IsConnected = true;
-                resetCount = A0.ReadInt32(418);
+                resetCount = A0.ReadInt32(418);//Reset count is stored at 418 offset. Check the MMAPRep file
                 return IsConnected;
             }
             catch (Exception ex)
@@ -50,7 +50,7 @@ namespace ANXRacersMMAPController
             if (IsConnected)
             {
                 var mmap = new MMAPRep();
-                mmap.UpdateNumber = A512.ReadInt32(0);
+                mmap.UpdateNumber = A512.ReadInt32(0);//Update Number at the start of Read Operation
 
                 A0.Read<MMLevel>(116, out mmap.Level);
 
@@ -58,14 +58,14 @@ namespace ANXRacersMMAPController
 
                 mmap.GameState = (MMGameStates)A0.ReadInt32(400);
 
-                A512.Read(8, out mmap.SpaceshipState);
-                A512.Read(560 - 512, out mmap.TrackState);
+                A512.Read(8, out mmap.SpaceshipState);//Reads Spaceships Real time State
+                A512.Read(560 - 512, out mmap.CheckpointStatus);//Reads Next Checkpoint's Real time State
                 mmap.Sensors = new MMRayInfo[24 * 5];
-                A512.ReadArray(600 - 512, mmap.Sensors, 0, 24 * 5);
+                A512.ReadArray(600 - 512, mmap.Sensors, 0, 24 * 5);//Reads info about 24/360° raycast sensors. Each provides upto 5 Hits
 
-                if (mmap.UpdateNumber == A512.ReadInt32(0))
+                if (mmap.UpdateNumber == A512.ReadInt32(0))//Update Number at the end of Read Operation should be same as at the start.
                 {
-                    Data = mmap;
+                    Data = mmap;//Ensure we only read a sane copy
                 }
             }
             return Data;
@@ -75,8 +75,8 @@ namespace ANXRacersMMAPController
         {
             if (IsConnected)
             {
-                A0.Write(410, ref inputs);
-                A0.Write(418, resetCount);
+                A0.Write(410, ref inputs);//Write Accel, Turn Inputs.
+                A0.Write(418, resetCount);//Write reset count. if this is incremented value from previous. the race will reset
             }
         }
 

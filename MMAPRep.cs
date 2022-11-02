@@ -99,7 +99,7 @@ namespace ANXRacersMMAPController
 
         public MMSpaceshipLiveState SpaceshipState;
 
-        public MMTrackState TrackState;
+        public MMTrackState CheckpointStatus;
 
         public MMRayInfo[] Sensors;
     }
